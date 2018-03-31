@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: rbmw
+      POSTGRES_USER: rbmw-admin
+      POSTGRES_PASSWORD: secret-password
+    ports:
+      - 5432
+  api:
+    build:
+      context: ../
+      dockerfile: integration/Dockerfile-api
+    command: ["-db.dbname", "rbmw", "-db.host", "db", "-db.password", "secret-password", "-db.username", "rbmw-admin"]
+    ports:
+      - 8443
+

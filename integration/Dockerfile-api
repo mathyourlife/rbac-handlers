@@ -1,0 +1,17 @@
+FROM golang:1.10 as builder
+WORKDIR /go/src/github.com/mathyourlife/rbac-handlers/integration/api
+COPY . /go/src/github.com/mathyourlife/rbac-handlers
+RUN go get github.com/golang/dep/cmd/dep
+RUN cd /go/src/github.com/mathyourlife/rbac-handlers && \
+	dep ensure -v
+RUN cd /go/src/github.com/mathyourlife/rbac-handlers/pkg/backend && \
+	dep ensure -v
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /go/src/github.com/mathyourlife/rbac-handlers/integration/api/api .
+COPY --from=builder /go/src/github.com/mathyourlife/rbac-handlers/integration/testdata/*.pem ./
+ENTRYPOINT ["./api"]
+
